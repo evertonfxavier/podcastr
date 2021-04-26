@@ -1,16 +1,16 @@
-import React from "react";
-import { useRouter } from "next/router";
+import React, { useContext } from "react";
 import { GetStaticPaths, GetStaticProps } from "next";
+import Head from "next/head";
 import Link from "next/link";
-
+import Image from "next/image";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 import { convertDurationToTimeString } from "../../utils/convertDurationToTimeString";
 import { api } from "../../services/api";
+import { PlayerContext, usePlayer } from "../../contexts/playerContext";
 
 import styles from "./episode.module.scss";
-import Image from "next/image";
 
 type Episode = {
   id: string;
@@ -29,8 +29,14 @@ type EpisodeProps = {
 };
 
 export default function Episode({ episode }: EpisodeProps) {
+  const { play } = usePlayer();
+
   return (
     <div className={styles.episode}>
+      <Head>
+        <title>{episode.title} | Podcastr</title>
+      </Head>
+
       <div className={styles.thumbnailContainer}>
         <button type="button">
           <Link href="/">
@@ -43,7 +49,7 @@ export default function Episode({ episode }: EpisodeProps) {
           src={episode.thumbnail}
           objectFit="cover"
         />
-        <button type="button">
+        <button type="button" onClick={() => play(episode)}>
           <img src="/play.svg" alt="play episode" />
         </button>
       </div>
@@ -72,13 +78,13 @@ export const getStaticPaths: GetStaticPaths = async () => {
     },
   });
 
-  const paths = data.map(episode => {
+  const paths = data.map((episode) => {
     return {
       params: {
-        slug: episode.id
-      }
-    }
-  })
+        slug: episode.id,
+      },
+    };
+  });
 
   return {
     paths,
